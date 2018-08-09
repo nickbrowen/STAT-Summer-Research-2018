@@ -3,19 +3,19 @@
 #Test import on Herb Treatment, Mar 17 (Budbreak)
 
 #Rep A
-Heb_MarA <- read_excel("C:/Users/nickbrowen/Desktop/STAT Summer Research/Copy of Bacteria 2017.xlsm", 
-            sheet = "A1.HERB.Mar17.A", skip = 4)
-Heb_MarA <- Heb_MarA[-1,]
+#Heb_MarA <- read_excel("C:/Users/nickbrowen/Desktop/STAT Summer Research/Copy of Bacteria 2017.xlsm", 
+#            sheet = "A1.HERB.Mar17.A", skip = 4)
+#Heb_MarA <- Heb_MarA[-1,]
 
 #Rep B
-Heb_MarB <- read_excel("C:/Users/nickbrowen/Desktop/STAT Summer Research/Copy of Bacteria 2017.xlsm", 
-                       sheet = "A2.HERB.Mar17.B", skip = 4)
-Heb_MarB <- Heb_MarB[-1,]
+#Heb_MarB <- read_excel("C:/Users/nickbrowen/Desktop/STAT Summer Research/Copy of Bacteria 2017.xlsm", 
+#                       sheet = "A2.HERB.Mar17.B", skip = 4)
+#Heb_MarB <- Heb_MarB[-1,]
 
 #Rep C
-Heb_MarB <- read_excel("C:/Users/nickbrowen/Desktop/STAT Summer Research/Copy of Bacteria 2017.xlsm", 
-                       sheet = "A2.HERB.Mar17.B", skip = 4)
-Heb_MarB <- Heb_MarB[-1,]
+#Heb_MarB <- read_excel("C:/Users/nickbrowen/Desktop/STAT Summer Research/Copy of Bacteria 2017.xlsm", 
+#                      sheet = "A2.HERB.Mar17.B", skip = 4)
+#Heb_MarB <- Heb_MarB[-1,]
 
 ##Importing all Sheets
 
@@ -41,9 +41,9 @@ for (i in 1:length(sheet_names)){
 ##Summing Amount by order within each replicate
 
 #figuring it out on one
-sum_matrix <- rowsum(A1.HERB.Mar17.A$Amount, A1.HERB.Mar17.A$Order)
-assign(paste("summed", "A1.HERB.Mar17.A", sep = "_"), data.frame(Order = rownames(sum_matrix), 
-           Amount = sum_matrix, row.names = NULL))
+#sum_matrix <- rowsum(A1.HERB.Mar17.A$Amount, A1.HERB.Mar17.A$Order)
+#assign(paste("summed", "A1.HERB.Mar17.A", sep = "_"), data.frame(Order = rownames(sum_matrix), 
+#           Amount = sum_matrix, row.names = NULL))
 
 #big loop to do all
 
@@ -53,7 +53,7 @@ assign(paste("summed", "A1.HERB.Mar17.A", sep = "_"), data.frame(Order = rowname
 #         data.frame(Order = rownames(sum_matrix), Amount = sum_matrix, row.names = NULL))
 #}
 
-#adding seasons column and summing
+#adding seasons column and summing by order
 
 ADEFGH12 <- rep(rep(c("Budbreak", "Bloom", "Veraison", "Harvest"), each = 3))
 BC10 <- rep(c(rep("Budbreak",3), rep("Bloom",2), rep("Veraison",3), rep("Harvest",2)),2)
@@ -128,3 +128,75 @@ NCC.Mar.avg <- merge.avg(summed_H1.NCC.Mar.A, summed_H2.NCC.Mar.B, summed_H3.NCC
 NCC.May.avg <- merge.avg(summed_H4.NCC.May.A, summed_H5.NCC.May.B, summed_H6.NCC.May.C)
 NCC.Jul.avg <- merge.avg(summed_H7.NCC.Jul.A, summed_H8.NCC.Jul.B, summed_H9.NCC.Jul.C)
 NCC.Sep.avg <- merge.avg(summed_H10.NCC.Sep.A, summed_H11.NCC.Sep.B, summed_H12.NCC.Sep.C)
+
+
+
+#Combining 8 treatments into 4 season data sets
+
+tempMar.H.NH <- merge(H.Mar.avg, NH.Mar.avg, by = "Order", all = T)[-c(3,5)]
+names(tempMar.H.NH)[c(2,3)] <- c("H", "NH")
+tempMar.H.NH.SF <- merge(tempMar.H.NH, SF.Mar.avg, by = "Order", all = T)[-5]
+names(tempMar.H.NH.SF)[4] <- "SF"
+tempMar.H.NH.SF.OF <- merge(tempMar.H.NH.SF, OF.Mar.avg, by = "Order", all = T)[-6]
+names(tempMar.H.NH.SF.OF)[5] <- "OF"
+tempMar.H.NH.SF.OF.NF <- merge(tempMar.H.NH.SF.OF, OF.Mar.avg, by = "Order", all = T)[-7]
+names(tempMar.H.NH.SF.OF.NF)[6] <- "NF"
+tempMar.H.NH.SF.OF.NF.HWD <- merge(tempMar.H.NH.SF.OF.NF, HWD.Mar.avg, by = "Order", all = T)[-8]
+names(tempMar.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
+tempMar.H.NH.SF.OF.NF.HWD.LWD <- merge(tempMar.H.NH.SF.OF.NF.HWD, LWD.Mar.avg, by = "Order", all = T)[-9]
+names(tempMar.H.NH.SF.OF.NF.HWD.LWD)[8] <- "LWD"
+tempMar.H.NH.SF.OF.NF.HWD.LWD.NCC <- merge(tempMar.H.NH.SF.OF.NF.HWD.LWD, NCC.Mar.avg, by = "Order", all = T)[-10]
+names(tempMar.H.NH.SF.OF.NF.HWD.LWD.NCC)[9] <- "NCC"
+Mar <- cbind(tempMar.H.NH.SF.OF.NF.HWD.LWD.NCC, "Season" = rep("Budbreak", length(tempMar.H.NH.SF.OF.NF.HWD.LWD.NCC$Order)))
+Mar[is.na(Mar)] <- 0
+
+tempMay.H.NH <- merge(H.May.avg, NH.May.avg, by = "Order", all = T)[-c(3,5)]
+names(tempMay.H.NH)[c(2,3)] <- c("H", "NH")
+tempMay.H.NH.SF <- merge(tempMay.H.NH, SF.May.avg, by = "Order", all = T)[-5]
+names(tempMay.H.NH.SF)[4] <- "SF"
+tempMay.H.NH.SF.OF <- merge(tempMay.H.NH.SF, OF.May.avg, by = "Order", all = T)[-6]
+names(tempMay.H.NH.SF.OF)[5] <- "OF"
+tempMay.H.NH.SF.OF.NF <- merge(tempMay.H.NH.SF.OF, OF.May.avg, by = "Order", all = T)[-7]
+names(tempMay.H.NH.SF.OF.NF)[6] <- "NF"
+tempMay.H.NH.SF.OF.NF.HWD <- merge(tempMay.H.NH.SF.OF.NF, HWD.May.avg, by = "Order", all = T)[-8]
+names(tempMay.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
+tempMay.H.NH.SF.OF.NF.HWD.LWD <- merge(tempMay.H.NH.SF.OF.NF.HWD, LWD.May.avg, by = "Order", all = T)[-9]
+names(tempMay.H.NH.SF.OF.NF.HWD.LWD)[8] <- "LWD"
+tempMay.H.NH.SF.OF.NF.HWD.LWD.NCC <- merge(tempMay.H.NH.SF.OF.NF.HWD.LWD, NCC.May.avg, by = "Order", all = T)[-10]
+names(tempMay.H.NH.SF.OF.NF.HWD.LWD.NCC)[9] <- "NCC"
+May <- cbind(tempMay.H.NH.SF.OF.NF.HWD.LWD.NCC, "Season" = rep("Bloom", length(tempMay.H.NH.SF.OF.NF.HWD.LWD.NCC$Order)))
+May[is.na(May)] <- 0
+
+tempJul.H.NH <- merge(H.Jul.avg, NH.Jul.avg, by = "Order", all = T)[-c(3,5)]
+names(tempJul.H.NH)[c(2,3)] <- c("H", "NH")
+tempJul.H.NH.SF <- merge(tempJul.H.NH, SF.Jul.avg, by = "Order", all = T)[-5]
+names(tempJul.H.NH.SF)[4] <- "SF"
+tempJul.H.NH.SF.OF <- merge(tempJul.H.NH.SF, OF.Jul.avg, by = "Order", all = T)[-6]
+names(tempJul.H.NH.SF.OF)[5] <- "OF"
+tempJul.H.NH.SF.OF.NF <- merge(tempJul.H.NH.SF.OF, OF.Jul.avg, by = "Order", all = T)[-7]
+names(tempJul.H.NH.SF.OF.NF)[6] <- "NF"
+tempJul.H.NH.SF.OF.NF.HWD <- merge(tempJul.H.NH.SF.OF.NF, HWD.Jul.avg, by = "Order", all = T)[-8]
+names(tempJul.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
+tempJul.H.NH.SF.OF.NF.HWD.LWD <- merge(tempJul.H.NH.SF.OF.NF.HWD, LWD.Jul.avg, by = "Order", all = T)[-9]
+names(tempJul.H.NH.SF.OF.NF.HWD.LWD)[8] <- "LWD"
+tempJul.H.NH.SF.OF.NF.HWD.LWD.NCC <- merge(tempJul.H.NH.SF.OF.NF.HWD.LWD, NCC.Jul.avg, by = "Order", all = T)[-10]
+names(tempJul.H.NH.SF.OF.NF.HWD.LWD.NCC)[9] <- "NCC"
+Jul <- cbind(tempJul.H.NH.SF.OF.NF.HWD.LWD.NCC, "Season" = rep("Veraison", length(tempJul.H.NH.SF.OF.NF.HWD.LWD.NCC$Order)))
+Jul[is.na(Jul)] <- 0
+
+tempSep.H.NH <- merge(H.Sep.avg, NH.Sep.avg, by = "Order", all = T)[-c(3,5)]
+names(tempSep.H.NH)[c(2,3)] <- c("H", "NH")
+tempSep.H.NH.SF <- merge(tempSep.H.NH, SF.Sep.avg, by = "Order", all = T)[-5]
+names(tempSep.H.NH.SF)[4] <- "SF"
+tempSep.H.NH.SF.OF <- merge(tempSep.H.NH.SF, OF.Sep.avg, by = "Order", all = T)[-6]
+names(tempSep.H.NH.SF.OF)[5] <- "OF"
+tempSep.H.NH.SF.OF.NF <- merge(tempSep.H.NH.SF.OF, OF.Sep.avg, by = "Order", all = T)[-7]
+names(tempSep.H.NH.SF.OF.NF)[6] <- "NF"
+tempSep.H.NH.SF.OF.NF.HWD <- merge(tempSep.H.NH.SF.OF.NF, HWD.Sep.avg, by = "Order", all = T)[-8]
+names(tempSep.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
+tempSep.H.NH.SF.OF.NF.HWD.LWD <- merge(tempSep.H.NH.SF.OF.NF.HWD, LWD.Sep.avg, by = "Order", all = T)[-9]
+names(tempSep.H.NH.SF.OF.NF.HWD.LWD)[8] <- "LWD"
+tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC <- merge(tempSep.H.NH.SF.OF.NF.HWD.LWD, NCC.Sep.avg, by = "Order", all = T)[-10]
+names(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC)[9] <- "NCC"
+Sep <- cbind(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC, "Season" = rep("Budbreak", length(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC$Order)))
+Sep[is.na(Sep)] <- 0
