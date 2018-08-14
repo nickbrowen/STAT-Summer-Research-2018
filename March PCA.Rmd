@@ -1,0 +1,54 @@
+---
+title: "PCA for March 2017"
+output: html_notebook
+---
+
+
+```{r}
+library(devtools)
+#install_github("cran/FactoMineR")
+#install_github("cran/factoextra")
+library(FactoMineR)
+library(factoextra)
+```
+
+
+Reading Data in and formatting how PCA function wants it
+```{r}
+Mar_data <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/MarSoil.csv")[,-1]
+Mar <- data.frame(Mar_data[-10], row.names = Mar_data$Order)
+Mar_res <- PCA(data.frame(Mar[c(-1,-10)], row.names = Mar$Order), graph = F)
+```
+
+Running PCA
+```{r}
+Mar_res <- PCA(data.frame(Mar[c(-1,-10)], row.names = Mar$Order), graph = F)
+summary(Mar_res)
+eigenvalues <- Mar_res$eig
+```
+
+Scree Plot
+```{r}
+fviz_eig(Mar_res, addlabels = TRUE)
+```
+
+Scatterplot of observations by dim1 and dim2
+```{r}
+fviz_pca_ind(Mar_res, label = "none")
+```
+
+Correlations between dimensions and variables
+```{r}
+Mar_res.desc <- dimdesc(Mar_res, axes = c(1,2), proba = 1)
+
+#Description of dimension 1
+Mar_res.desc$Dim.1
+
+# Description of dimension 2
+Mar_res.desc$Dim.2
+
+```
+```
+it seems that every variable is apart of component 1 (which doesnt seem useful at all). Every correlation is above .96.
+```
+
