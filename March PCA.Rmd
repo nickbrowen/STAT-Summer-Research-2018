@@ -16,15 +16,14 @@ library(factoextra)
 Reading Data in and formatting how PCA function wants it
 ```{r}
 Mar_data <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/MarSoil.csv")[,-1]
-Mar <- data.frame(Mar_data[-10], row.names = Mar_data$Order)
-Mar_res <- PCA(data.frame(Mar[c(-1,-10)], row.names = Mar$Order), graph = F)
+Mar <- data.frame(Mar_data[c(-1,-10)], row.names = Mar_data$Order)
 ```
 
 Running PCA
 ```{r}
-Mar_res <- PCA(data.frame(Mar[c(-1,-10)], row.names = Mar$Order), graph = F)
+Mar_res <- PCA(Mar, graph = F)
 summary(Mar_res)
-eigenvalues <- Mar_res$eig
+Mar_eig <- Mar_res$eig
 ```
 
 Scree Plot
@@ -49,6 +48,17 @@ Mar_res.desc$Dim.2
 
 ```
 ```
-it seems that every variable is apart of component 1 (which doesnt seem useful at all). Every correlation is above .96.
+It seems that every variable is apart of component 1 (which doesnt seem useful at all). Every correlation is above .96.
+```
+
+Individual Contributions to Dim1
+```{r}
+fviz_contrib(Mar_res, choice = "ind")
+```
+```{r}
+tail(sort(Mar_res$ind$contrib[,1]), 5)
+```
+```
+Sphingobacteriales is contributing a massive amount to dim1. I tried removing just that row from the data set to see how it was affecting the PCA, but nothing changed much at all (i.e. Mar[-114,]).
 ```
 

@@ -1,0 +1,54 @@
+---
+title: "Sep PCA"
+output: html_notebook
+---
+
+```{r}
+library(devtools)
+#install_github("cran/FactoMineR")
+#install_github("cran/factoextra")
+library(FactoMineR)
+library(factoextra)
+```
+
+
+Reading Data in and formatting how PCA function wants it
+```{r}
+Sep_data <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/SepSoil.csv")[,-1]
+Sep <- data.frame(Sep_data[-10], row.names = Sep_data$Order)
+Sep_res <- PCA(data.frame(Sep[c(-1,-10)], row.names = Sep$Order), graph = F)
+```
+
+Running PCA
+```{r}
+Sep_res <- PCA(data.frame(Sep[c(-1,-10)], row.names = Sep$Order), graph = F)
+summary(Sep_res)
+Sep_eig <- Sep_res$eig
+```
+
+Scree Plot
+```{r}
+fviz_eig(Sep_res, addlabels = TRUE)
+```
+
+Scatterplot of observations by dim1 and dim2
+```{r}
+fviz_pca_ind(Sep_res, label = "none")
+```
+
+Correlations between dimensions and variables
+```{r}
+Sep_res.desc <- dimdesc(Sep_res, axes = c(1,2), proba = 1)
+
+#Description of dimension 1
+Sep_res.desc$Dim.1
+
+# Description of dimension 2
+Sep_res.desc$Dim.2
+
+```
+```
+text
+```
+
+

@@ -62,7 +62,7 @@ season_loop <- c("bacteria",ADEFGH12, BC10,D11, rep(ADEFGH12,4))
 
 
 for (i in 1:length(sheet_names)){
-    sum_matrix <- rowsum(rawlist[[sheet_names2[i]]][,2], rawlist[[sheet_names2[i]]][,7], na.rm = T)
+    sum_matrix <- rowsum(unlist(rawlist[[sheet_names2[i]]][,2], use.names = F), unlist(rawlist[[sheet_names2[i]]][,7], use.names = F), na.rm = T)
     assign(paste("summed", sheet_names[i], sep = "_"), 
            data.frame(Order = rownames(sum_matrix), Amount = sum_matrix, 
                       Season = rep(season_loop[i], length(sum_matrix)),row.names = NULL))
@@ -139,7 +139,7 @@ tempMar.H.NH.SF <- merge(tempMar.H.NH, SF.Mar.avg, by = "Order", all = T)[-5]
 names(tempMar.H.NH.SF)[4] <- "SF"
 tempMar.H.NH.SF.OF <- merge(tempMar.H.NH.SF, OF.Mar.avg, by = "Order", all = T)[-6]
 names(tempMar.H.NH.SF.OF)[5] <- "OF"
-tempMar.H.NH.SF.OF.NF <- merge(tempMar.H.NH.SF.OF, OF.Mar.avg, by = "Order", all = T)[-7]
+tempMar.H.NH.SF.OF.NF <- merge(tempMar.H.NH.SF.OF, NF.Mar.avg, by = "Order", all = T)[-7]
 names(tempMar.H.NH.SF.OF.NF)[6] <- "NF"
 tempMar.H.NH.SF.OF.NF.HWD <- merge(tempMar.H.NH.SF.OF.NF, HWD.Mar.avg, by = "Order", all = T)[-8]
 names(tempMar.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
@@ -156,7 +156,7 @@ tempMay.H.NH.SF <- merge(tempMay.H.NH, SF.May.avg, by = "Order", all = T)[-5]
 names(tempMay.H.NH.SF)[4] <- "SF"
 tempMay.H.NH.SF.OF <- merge(tempMay.H.NH.SF, OF.May.avg, by = "Order", all = T)[-6]
 names(tempMay.H.NH.SF.OF)[5] <- "OF"
-tempMay.H.NH.SF.OF.NF <- merge(tempMay.H.NH.SF.OF, OF.May.avg, by = "Order", all = T)[-7]
+tempMay.H.NH.SF.OF.NF <- merge(tempMay.H.NH.SF.OF, NF.May.avg, by = "Order", all = T)[-7]
 names(tempMay.H.NH.SF.OF.NF)[6] <- "NF"
 tempMay.H.NH.SF.OF.NF.HWD <- merge(tempMay.H.NH.SF.OF.NF, HWD.May.avg, by = "Order", all = T)[-8]
 names(tempMay.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
@@ -173,7 +173,7 @@ tempJul.H.NH.SF <- merge(tempJul.H.NH, SF.Jul.avg, by = "Order", all = T)[-5]
 names(tempJul.H.NH.SF)[4] <- "SF"
 tempJul.H.NH.SF.OF <- merge(tempJul.H.NH.SF, OF.Jul.avg, by = "Order", all = T)[-6]
 names(tempJul.H.NH.SF.OF)[5] <- "OF"
-tempJul.H.NH.SF.OF.NF <- merge(tempJul.H.NH.SF.OF, OF.Jul.avg, by = "Order", all = T)[-7]
+tempJul.H.NH.SF.OF.NF <- merge(tempJul.H.NH.SF.OF, NF.Jul.avg, by = "Order", all = T)[-7]
 names(tempJul.H.NH.SF.OF.NF)[6] <- "NF"
 tempJul.H.NH.SF.OF.NF.HWD <- merge(tempJul.H.NH.SF.OF.NF, HWD.Jul.avg, by = "Order", all = T)[-8]
 names(tempJul.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
@@ -190,7 +190,7 @@ tempSep.H.NH.SF <- merge(tempSep.H.NH, SF.Sep.avg, by = "Order", all = T)[-5]
 names(tempSep.H.NH.SF)[4] <- "SF"
 tempSep.H.NH.SF.OF <- merge(tempSep.H.NH.SF, OF.Sep.avg, by = "Order", all = T)[-6]
 names(tempSep.H.NH.SF.OF)[5] <- "OF"
-tempSep.H.NH.SF.OF.NF <- merge(tempSep.H.NH.SF.OF, OF.Sep.avg, by = "Order", all = T)[-7]
+tempSep.H.NH.SF.OF.NF <- merge(tempSep.H.NH.SF.OF, NF.Sep.avg, by = "Order", all = T)[-7]
 names(tempSep.H.NH.SF.OF.NF)[6] <- "NF"
 tempSep.H.NH.SF.OF.NF.HWD <- merge(tempSep.H.NH.SF.OF.NF, HWD.Sep.avg, by = "Order", all = T)[-8]
 names(tempSep.H.NH.SF.OF.NF.HWD)[7] <- "HWD"
@@ -198,5 +198,17 @@ tempSep.H.NH.SF.OF.NF.HWD.LWD <- merge(tempSep.H.NH.SF.OF.NF.HWD, LWD.Sep.avg, b
 names(tempSep.H.NH.SF.OF.NF.HWD.LWD)[8] <- "LWD"
 tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC <- merge(tempSep.H.NH.SF.OF.NF.HWD.LWD, NCC.Sep.avg, by = "Order", all = T)[-10]
 names(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC)[9] <- "NCC"
-Sep <- cbind(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC, "Season" = rep("Budbreak", length(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC$Order)))
+Sep <- cbind(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC, "Season" = rep("Harvest", length(tempSep.H.NH.SF.OF.NF.HWD.LWD.NCC$Order)))
 Sep[is.na(Sep)] <- 0
+
+Soil2018 <- rbind.data.frame(Mar,May,Jul,Sep)
+
+
+write.csv(Mar, file = "MarSoil.csv")
+write.csv(May, file = "MaySoil.csv")
+write.csv(Jul, file = "JulSoil.csv")
+write.csv(Sep, file = "SepSoil.csv")
+write.csv(Soil2018, file = "Soil2018.csv")
+
+
+
