@@ -21,9 +21,11 @@ Mar <- data.frame(Mar_data[c(-1,-10)], row.names = Mar_data$Order)
 
 Running PCA
 ```{r}
-Mar_res <- PCA(Mar, graph = F)
+Mar_res <- PCA(Mar, graph = F, scale.unit = F)
+Mar.pca.prcomp <- prcomp(Mar, scale = F)
 summary(Mar_res)
-Mar_eig <- Mar_res$eig
+Mar_eigval <- Mar_res$eig #eigenvalues
+Mar_eigvec <- Mar.pca.prcomp$rotation
 ```
 
 Scree Plot
@@ -61,4 +63,19 @@ tail(sort(Mar_res$ind$contrib[,1]), 5)
 ```
 Sphingobacteriales is contributing a massive amount to dim1. I tried removing just that row from the data set to see how it was affecting the PCA, but nothing changed much at all (i.e. Mar[-114,]).
 ```
+
+```{r}
+fviz_pca_var(Mar_res, col.var = "contrib", repel = T)
+```
+
+
+```{r}
+fviz_contrib(Mar_res, choice = "var", axes = 1)
+sort(Mar_res$var$contrib[,1], decreasing = T)
+```
+```
+From assessing variable contributions to the first principal component, OF, NF, SF, NH, and H contribute most to variability in March. Out of these, OF is clearly the largest contributor. These are all positively correlated with the first principal component. This first dimension seems to be defined by the fertilizer and herbicide levels, suggesting that these are the most important variables in the Bud Break season.
+```
+
+
 

@@ -15,15 +15,16 @@ library(factoextra)
 Reading Data in and formatting how PCA function wants it
 ```{r}
 Jul_data <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/JulSoil.csv")[,-1]
-Jul <- data.frame(Jul_data[-10], row.names = Jul_data$Order)
-Jul_res <- PCA(data.frame(Jul[c(-1,-10)], row.names = Jul$Order), graph = F)
+Jul <- data.frame(Jul_data[c(-1,-10)], row.names = Jul_data$Order)
 ```
 
 Running PCA
 ```{r}
-Jul_res <- PCA(data.frame(Jul[c(-1,-10)], row.names = Jul$Order), graph = F)
+Jul_res <- PCA(Jul, graph = F, scale.unit = F)
+Jul.pca.prcomp <- prcomp(Jul, scale = F)
 summary(Jul_res)
-Jul_eig <- Jul_res$eig
+Jul_eigval <- Jul_res$eig #eigenvalues
+Jul_eigvec <- Jul.pca.prcomp$rotation
 ```
 
 Scree Plot
@@ -50,5 +51,11 @@ Jul_res.desc$Dim.2
 ```
 text
 ```
+```{r}
+fviz_pca_var(Jul_res, col.var = "contrib", repel = T)
+```
 
+```{r}
+fviz_contrib(Jul_res, choice = "var")
+```
 
