@@ -1,0 +1,230 @@
+---
+title: "MFA 2017"
+author: "Nick Browen"
+date: "August 22, 2018"
+output: html_document
+---
+
+Data
+```{r}
+#Soil <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/Soil2018.csv")[,-1]
+#Soil <- data.frame(Soil_data[,1], row.names = Soil_data$Order)
+
+Bud <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/MarSoil.csv")[,-c(1,11)]
+Blm <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/MaySoil.csv")[,-c(1,11)]
+Ver <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/JulSoil.csv")[,-c(1,11)]
+Har <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/SepSoil.csv")[,-c(1,11)]
+```
+
+```{r}
+names(Bud)[-1] <-  paste("Bud", names(Bud), sep = "_")[-1]
+names(Blm)[-1] <-  paste("Blm", names(Blm), sep = "_")[-1]
+names(Ver)[-1] <-  paste("Ver", names(Ver), sep = "_")[-1]
+names(Har)[-1] <-  paste("Har", names(Har), sep = "_")[-1]
+```
+
+Merging
+```{r}
+temp.Bud.Blm <- merge(Bud, Blm, all = T, by = "Order")
+temp.Bud.Blm.Ver <- merge(temp.Bud.Blm, Ver, all = T, by = "Order")
+Soil <- merge(temp.Bud.Blm.Ver, Har, all = T, by = "Order")
+Soil <- data.frame(Soil, row.names = Soil$Order)[-1]
+Soil[is.na(Soil)] <- 0
+```
+
+Packages
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(ggsci)
+```
+
+
+MFA
+```{r}
+res.mfa <- MFA(Soil, group = c(8,8,8,8), type = rep("c", 4), name.group = c("Budbreak", "Bloom", "Veraison", "Harvest"), graph = F)
+```
+
+Results
+```{r}
+eigenval <- res.mfa$eig
+fviz_screeplot(res.mfa, addlabels = T)
+```
+
+Standardized Loadings (Correlation) for Groups
+```{r}
+load.season <- sweep(res.mfa$group$coord,2,sqrt(res.mfa$eig[1:ncol(res.mfa$group$coord),1]),FUN="/")
+load.season
+```
+
+
+```{r}
+group <- get_mfa_var(res.mfa, "group")
+fviz_mfa_var(res.mfa, "group", title = "Season Coordinates")
+```
+
+Contributions of Seasons
+```{r}
+fviz_contrib(res.mfa, "group", axes = 1)
+fviz_contrib(res.mfa, "group", axes = 2)
+```
+
+Variables
+```{r}
+quanti.var <- get_mfa_var(res.mfa, "quanti.var")
+fviz_mfa_var(res.mfa, "quanti.var", palette = "jco", 
+             col.var.sup = "violet", repel = TRUE,  geom = c("point", "text"), legend = "bottom")
+```
+
+```{r}
+fviz_mfa_var(res.mfa, "quanti.var", col.var = "contrib", repel = TRUE, 
+             geom = c("point", "text"))
+```
+
+
+```{r}
+fviz_mfa_var(res.mfa, choice = "quanti.var", axes = c(1,2))
+```
+
+
+Contributions of Variables
+```{r}
+fviz_contrib(res.mfa, choice = "quanti.var", axes = 1, top = 23,
+             palette = "jco")
+fviz_contrib(res.mfa, choice = "quanti.var", axes = 2, top = 23,
+             palette = "jco")
+
+```
+
+Partial Axes
+```{r}
+fviz_mfa_axes(res.mfa)
+```
+
+```{r}
+load.partial.axes <- sweep(res.mfa$partial.axes$coord,2,sqrt(res.mfa$eig[1:ncol(res.mfa$partial.axes$coord),1]),FUN="/")
+load.partial.axes
+```
+
+
+```{r}
+#Partial Axes (each seasons dimensions) correlation with MFA dim1
+ sort(load.partial.axes[,1][load.partial.axes[,1] >0.35 | load.partial.axes[,1] < -.35])
+#all partial axes are season's dim1
+```
+
+
+```{r}
+#Partial Axes (each seasons dimensions) correlation with MFA dim2
+sort(load.partial.axes[,2][load.partial.axes[,2] >0.35 | load.partial.axes[,2] < -.35])
+```
+
+
+```{r}
+#Correlation of Season's dim1 with MFA's dim2
+res.mfa$partial.axes$cor[,2][c("Dim1.Budbreak", "Dim1.Bloom", "Dim1.Veraison", "Dim1.Harvest")]
+```
+
+
+Loadings for MFA Dim1
+```{r}
+#sweep(res.mfa$global.pca$var$coord,2,sqrt(res.mfa$global.pca$eig[1:ncol(res.mfa$global.pca$var$coord),1]),FUN="/")
+```
+
+
+Variables by MFA Dim1 and Dim2
+```{r}
+fviz_mfa_var(res.mfa)
+```
+
+Variables most correlated with MFA dim1 and dim2 **could be the weirdly high corrs
+```{r}
+#dim1 (all of them)
+sort(res.mfa$quanti.var$cor[,1][res.mfa$quanti.var$cor[,1] >0.35 | res.mfa$quanti.var$cor[,1] < -.35])
+
+#dim2
+ sort(res.mfa$quanti.var$cor[,2][res.mfa$quanti.var$cor[,2] >0.35 | res.mfa$quanti.var$cor[,2] < -.35])
+```
+
+
+
+
+Will be useful for how specific microbes change over time
+```{r}
+fviz_mfa_ind(res.mfa, partial = c("sphingobacteriales", "actinomycetales", "bacillales", 
++ "solirubrobacterales"))
+```
+
+```{r}
+Soil[121,] #sphingobacteriales
+Soil[7,] #actinomycetales
+```
+
+
+```
+For sphingobacteriales, this order has high number of microbes in soil microbial communities with non-CC treatments in Bloom and Budbreak, for Veraison and Harvest CC treatments are still lower number of microbes than the other treatments but not by that much, basically the non-CC treatments are pretty low during Harvest and Ver (hence low Dim2 coord), but the non-CC trts are still a little higher than the CC trts (hence slightly higher Dim1 coord).
+```
+```{r}
+fviz_contrib(res.mfa, choice = "ind", axes = c(1,2), top = 23,
+             palette = "jco")
+```
+
+
+
+MFA DIM1
+```{r}
+dim1contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,1], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("H", "NH", "SF", "OF", "NF", "HWD", "LWD", "NCC"), 4))
+
+dim1contrib$Trt <- factor(dim1contrib$Trt, levels = dim1contrib$Trt[order(-dim1contrib$Cont)])
+
+ggplot(dim1contrib, aes(x = Trt, y= Cont, fill = Group)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") +  ggtitle("Variable Contributions to MFA Dim1 Colored by Treatment Level")
+```
+
+
+```{r}
+trt_dim1contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,1], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("Herb", "Herb", "Fert", "Fert", "Fert", "CC", "CC", "CC"), 4))
+
+trt_dim1contrib$Trt <- factor(trt_dim1contrib$Trt, levels = trt_dim1contrib$Trt[order(-trt_dim1contrib$Cont)])
+
+ggplot(trt_dim1contrib, aes(x = Trt, y= Cont, fill = Group)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") + ggtitle("Variable Contributions to MFA Dim1 Colored by Treatmeant Type")
+```
+
+
+```{r}
+season_dim1contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,1], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("Budbreak", "Bloom", "Veraison", "Harvest"), each = 8))
+
+season_dim1contrib$Trt <- factor(season_dim1contrib$Trt, levels = season_dim1contrib$Trt[order(-season_dim1contrib$Cont)])
+
+ggplot(season_dim1contrib, aes(x = Trt, y= Cont, fill = Group)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") + ggtitle("Variable Contributions to MFA Dim1 Colored by Season")
+```
+
+
+
+
+
+
+MFA DIM2
+```{r}
+dim2contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,2], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("H", "NH", "SF", "OF", "NF", "HWD", "LWD", "NCC"), 4))
+
+dim2contrib$Trt <- factor(dim2contrib$Trt, levels = dim2contrib$Trt[order(-dim2contrib$Cont)])
+
+ggplot(dim2contrib, aes(x = Trt, y= Cont, fill = Group)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") +  ggtitle("Variable Contributions to MFA Dim2 Colored by Treatment Level")
+```
+
+```{r}
+trt_dim2contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,2], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("Herb", "Herb", "Fert", "Fert", "Fert", "CC", "CC", "CC"), 4))
+
+trt_dim2contrib$Trt <- factor(trt_dim2contrib$Trt, levels = trt_dim2contrib$Trt[order(-trt_dim2contrib$Cont)])
+
+ggplot(trt_dim2contrib, aes(x = Trt, y= Cont, fill = Group)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") + ggtitle("Variable Contributions to MFA Dim2 Colored by Treatmeant Type")
+```
+
+```{r}
+corr_dim2contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,2], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("H", "NH", "SF", "OF", "NF", "HWD", "LWD", "NCC"), 4), Corr = res.mfa$quanti.var$cor[,2], Pos_Corr = res.mfa$quanti.var$cor[,2] > 0)
+
+corr_dim2contrib$Trt <- factor(corr_dim2contrib$Trt, levels = corr_dim2contrib$Trt[order(-corr_dim2contrib$Cont)])
+
+ggplot(corr_dim2contrib, aes(x = Trt, y= Cont, fill = Pos_Corr)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") +  ggtitle("Variable Contributions to MFA Dim2 Colored by Correlation")
+```
+

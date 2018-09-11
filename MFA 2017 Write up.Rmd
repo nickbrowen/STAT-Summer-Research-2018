@@ -1,0 +1,170 @@
+---
+title: "MFA 2017 Analysis"
+author: "Nick Browen"
+date: "September 10, 2018"
+output: html_document
+---
+
+**Reading in Data**
+```{r}
+#Soil <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/Soil2018.csv")[,-1]
+#Soil <- data.frame(Soil_data[,1], row.names = Soil_data$Order)
+
+Bud <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/MarSoil.csv")[,-c(1,11)]
+Blm <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/MaySoil.csv")[,-c(1,11)]
+Ver <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/JulSoil.csv")[,-c(1,11)]
+Har <- read.csv("C:/Users/nickbrowen/Desktop/STAT Summer Research/SepSoil.csv")[,-c(1,11)]
+```
+
+
+**Formatting Data**
+```{r}
+names(Bud)[-1] <-  paste("Bud", names(Bud), sep = "_")[-1]
+names(Blm)[-1] <-  paste("Blm", names(Blm), sep = "_")[-1]
+names(Ver)[-1] <-  paste("Ver", names(Ver), sep = "_")[-1]
+names(Har)[-1] <-  paste("Har", names(Har), sep = "_")[-1]
+```
+
+**Merging**
+```{r}
+temp.Bud.Blm <- merge(Bud, Blm, all = T, by = "Order")
+temp.Bud.Blm.Ver <- merge(temp.Bud.Blm, Ver, all = T, by = "Order")
+Soil <- merge(temp.Bud.Blm.Ver, Har, all = T, by = "Order")
+Soil <- data.frame(Soil, row.names = Soil$Order)[-1]
+Soil[is.na(Soil)] <- 0
+```
+
+**Packages**
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(ggsci)
+```
+
+
+**Running the MFA**
+```{r}
+res.mfa <- MFA(Soil, group = c(8,8,8,8), type = rep("c", 4), name.group = c("Budbreak", "Bloom", "Veraison", "Harvest"), graph = F)
+```
+
+**Results**
+```{r}
+eigenval <- res.mfa$eig
+fviz_screeplot(res.mfa, addlabels = T)
+```
+```
+Most of the variability in the number of microbes in the soil across all 4 seasons is explained by the first principal component (78.3%), but the second principal component also explains a moderate amount of variability (17.1%). I will consider the results of both the first and second principal component, but with a much greater emphasis on the first principal component.
+```
+
+
+**Standardized Loadings (Correlation) for Groups (Seasons)**
+```{r}
+load.season <- sweep(res.mfa$group$coord,2,sqrt(res.mfa$eig[1:ncol(res.mfa$group$coord),1]),FUN="/")
+load.season
+```
+
+
+```{r}
+group <- get_mfa_var(res.mfa, "group")
+fviz_mfa_var(res.mfa, "group", title = "Season Coordinates")
+```
+```
+Overall, the season's coordinates are very similiar, especially for Dimension 1. There is a little more separation for Dimension 2 with Budbreak and Harvest being more important for Dimension 2. 
+```
+
+
+
+```{r}
+fviz_contrib(res.mfa, "group", axes = 1)
+fviz_contrib(res.mfa, "group", axes = 2)
+```
+```
+Again, we see similiar contributions for each season to Dimension 1 and then a slight emphasis on Budbreak and Harvest for Dimension 2.
+```
+
+
+**Variable (Treatment) Analysis**
+```{r}
+quanti.var <- get_mfa_var(res.mfa, "quanti.var")
+fviz_mfa_var(res.mfa, "quanti.var", palette = "jco", 
+             col.var.sup = "violet", repel = TRUE,  geom = c("point", "text"), legend = "bottom")
+```
+
+```{r}
+fviz_mfa_var(res.mfa, "quanti.var", col.var = "contrib", repel = TRUE, 
+             geom = c("point", "text"))
+```
+```
+This graph is especially helpful in gleaning what the first two principal components represent in this MFA. 
+
+The first dimension essentially seperates all the soil microbial communities with CoverCrop treatments from the ones with non-CoverCrop treatments for every season (look at this graph only with respect to the x-axis). Each of the 4 seasons contributed similiarly to the first principal component and, as we can see, every Cover Crop treatment for each season has very low coordinates and contributions to the first prinicpal component. This tells us that the biggest source of variability in number of soil microbes across all 4 seasons is between soil microbial communities within the Cover Crop treatment group and those that weren't. The non-CoverCrop treatments are all on the higher side of dimension 1, marking them as more important for a high number of microbes.
+
+The second dimension groups Harvest and Veraison together with positive coordinates and Budbreak and Bloom together with negative coordinates. After all the variability of the Cover Crop treatments has been accounted for, the Harvest and Veraison season are similiar to each other as are Budbreak and Bloom (this is somewhat intuitive). The larger the magnitude of the coordinates for each treatment, the mre important that treatment is for high number of microbes in that season.
+
+```
+
+```{r}
+dim2contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,2], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("H", "NH", "SF", "OF", "NF", "HWD", "LWD", "NCC"), 4))
+
+dim2contrib$Trt <- factor(dim2contrib$Trt, levels = dim2contrib$Trt[order(-dim2contrib$Cont)])
+
+ggplot(dim2contrib, aes(x = Trt, y= Cont, fill = Group)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") +  ggtitle("Variable Contributions to MFA Dim2 Colored by Treatment Level")+ labs(y = "Contributions (%)", x = "Treatment Levels")
+```
+
+
+```{r}
+trt_dim2contrib <- data.frame(Cont = res.mfa$quanti.var$contrib[,2], Trt = row.names(res.mfa$quanti.var$contrib), Group = rep(c("Herb", "Herb", "Fert", "Fert", "Fert", "CC", "CC", "CC"), 4))
+
+trt_dim2contrib$Trt <- factor(trt_dim2contrib$Trt, levels = trt_dim2contrib$Trt[order(-trt_dim2contrib$Cont)])
+
+ggplot(trt_dim2contrib, aes(x = Trt, y= Cont, fill = Group)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_hline(yintercept =  100/32, linetype = "dotted") + ggtitle("Variable Contributions to MFA Dim2 Colored by Treatmeant Type")+ labs(y = "Contributions (%)", x = "Treatment Levels")
+```
+```{r}
+head(sort(res.mfa$quanti.var$contrib[,2], decreasing = T), n = 10)
+```
+
+
+```
+Keeping in mind that the most important choice for a high number of microbes in the soil has to do with non-CoverCrop treatments, these are recommended treatments for each season taken from the second prinicpal component. It is helpful to think of the seasons in two groups: (Budbreak, Bloom) and (Veraison and Harvest). These seasons are similiar to each other and have similiar suggested treatments.
+
+I will consider the treatments that are the 10 largest contributors to dimension 2. Together the top 10 contributers are responsible for 67.14% contributions to dimension 2, which translates to 67.14*0.171 = 11.48% of total variation in number of soil microbes. 
+
+The most important treatments by contribution within each season (ordered from highest to lowest):
+  -Budbreak: OF, NF, SF
+  -Bloom: OF, SF
+  
+  -Veraison: NF, SF
+  -Harvest: OF, NH, NF
+  
+The most important treatment for Budbreak and Bloom is Organic Fertilizer.
+
+The most important for Harvest and Veraison is No Fertilizer and No Herbicide. 
+Even though No Fertilizer is not Harvest's number one contributor (Organic Fertilizer is), No Fertilizer is the the fertilizer treatment that these two seasons have in common and we know that the Harvest and Veraison seasons are very similiar. Therefore, I think it makes sense to consider the most important treatments for each season in relation to each other. When taken together, No Fertilizer is more important to Harvest and Veraison (5.834+4.6741 = 10.508) than Organic Fertilizer (7.0554 + 1. 8329 = 8.8883). Similiarly for No Herbicide. Even though No Herbicide for Veraison is not in the top 10 contributors for dimension 2,  No Herbicide is important for Harvest. 
+```
+
+
+**Individual (Bacteria Order) Analysis**
+```{r}
+fviz_mfa_ind(res.mfa, partial = c("sphingobacteriales", "actinomycetales"))
+```
+
+```{r}
+Soil[121,] #sphingobacteriales
+Soil[7,] #actinomycetales
+```
+
+
+```{r}
+fviz_contrib(res.mfa, choice = "ind", axes = c(1,2), top = 23,
+             palette = "jco")
+```
+
+```
+The two most important bacteria orders that help explain the variability in the soil microbial communities are actinomycetales and sphingobacteriales. Actinomycetalesis more important for Harvest and Veraison. Sphingobacteriales is more important for Budbreak and Bloom.
+
+For sphingobacteriales, this order has high number of microbes in soil microbial communities with non-CC treatments in Bloom and Budbreak. For Veraison and Harvest, CC treatments still have a lower number of microbes than the non-CC treatments but not by that much. Basically the non-CC treatments are low during Harvest and Ver (hence a low Dim2 coord), but the non-CC treatments are still a  higher than the CC trts (hence a slightly higher Dim1 coord).
+
+Similiar for actinomycetales, but the groups of Seasons are reversed.
+```
+
+
